@@ -2,6 +2,10 @@
 # Set your API key here or as an environment variable
 # The chatbot uses Retrieval-Augmented Generation (RAG) to provide personalized responses
 
+# Server Configuration
+# Port is automatically set by cloud platforms (Railway, Render, etc.) via PORT environment variable
+server.port=${PORT:8080}
+
 # OpenAI Configuration
 llm.api.key=YOUR_OPENAI_API_KEY_HERE
 llm.api.endpoint=https://api.openai.com/v1/chat/completions
