@@ -32,3 +32,6 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Configuration files with sensitive data
+src/main/resources/application.properties
+

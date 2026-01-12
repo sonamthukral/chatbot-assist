@@ -1,0 +1,14 @@
+# LLM Configuration
+# Set your API key here or as an environment variable
+# The chatbot uses Retrieval-Augmented Generation (RAG) to provide personalized responses
+
+# OpenAI Configuration
+llm.api.key=YOUR_OPENAI_API_KEY_HERE
+llm.api.endpoint=https://api.openai.com/v1/chat/completions
+llm.model=gpt-3.5-turbo
+
+# Alternative: Local LLM (Ollama)
+# llm.api.key=not-needed
+# llm.api.endpoint=http://localhost:11434/v1/chat/completions
+# llm.model=llama3.2:1b
+

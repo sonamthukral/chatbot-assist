@@ -1,6 +1,7 @@
 package com.suicide.questionbank;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,12 +21,41 @@ public class ChatbotController {
     
     private QuestionBankManager questionManager;
     private ResourceManager resourceManager;
+    private ChatService chatService;
     
     @Autowired
-    public ChatbotController() {
+    public ChatbotController(
+            @Value("${llm.api.key:}") String llmApiKey,
+            @Value("${llm.api.endpoint:https://api.openai.com/v1/chat/completions}") String llmEndpoint,
+            @Value("${llm.model:gpt-3.5-turbo}") String llmModel) {
         try {
             this.questionManager = new QuestionBankManager("suicide_question_bank.json");
             this.resourceManager = new ResourceManager("resources_full.json");
+            
+            // Initialize LLM service if API key is provided
+            System.out.println("Checking LLM configuration...");
+            System.out.println("  API Key provided: " + (llmApiKey != null && !llmApiKey.trim().isEmpty()));
+            System.out.println("  API Key length: " + (llmApiKey != null ? llmApiKey.length() : 0));
+            System.out.println("  Endpoint: " + llmEndpoint);
+            System.out.println("  Model: " + llmModel);
+            
+            if (llmApiKey != null && !llmApiKey.trim().isEmpty() && !llmApiKey.equals("YOUR_OPENAI_API_KEY_HERE")) {
+                try {
+                    LLMService llmService = new LLMService(llmApiKey, llmEndpoint, llmModel);
+                    this.chatService = new ChatService(llmService, resourceManager, questionManager);
+                    System.out.println("✅ LLM service enabled - using AI-powered responses.");
+                } catch (Exception e) {
+                    System.err.println("❌ Error creating LLM service: " + e.getMessage());
+                    e.printStackTrace();
+                    this.chatService = new ChatService(resourceManager, questionManager);
+                    System.out.println("⚠️ Falling back to rule-based responses due to LLM initialization error.");
+                }
+            } else {
+                // Use fallback mode - rule-based conversational responses
+                this.chatService = new ChatService(resourceManager, questionManager);
+                System.out.println("⚠️ LLM API key not configured. Using rule-based conversational responses.");
+                System.out.println("Set 'llm.api.key' in application.properties to enable AI-powered responses.");
+            }
         } catch (IOException e) {
             System.err.println("Error initializing managers: " + e.getMessage());
             e.printStackTrace();
@@ -134,6 +164,68 @@ public class ChatbotController {
             );
             return ResponseEntity.ok(resources);
         } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    /**
+     * Chat endpoint for conversational responses using LLM.
+     */
+    @PostMapping("/api/chat")
+    @ResponseBody
+    public ResponseEntity<?> chat(@RequestBody Map<String, Object> request) {
+        if (chatService == null) {
+            return ResponseEntity.status(503).body(Map.of(
+                "error", "Chat service not available. Please check server logs."
+            ));
+        }
+        
+        try {
+            String message = (String) request.get("message");
+            if (message == null || message.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Message is required"));
+            }
+            
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> conversationHistory = (List<Map<String, String>>) request.get("history");
+            
+            ChatService.ChatResponse response = chatService.generateChatResponse(message, conversationHistory);
+            
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("message", response.getMessage());
+            
+            // Convert resources to response format
+            List<Map<String, Object>> resourcesList = new ArrayList<>();
+            for (com.suicide.questionbank.Resource r : response.getSuggestedResources()) {
+                Map<String, Object> resourceData = new HashMap<>();
+                resourceData.put("name", r.getName());
+                resourceData.put("description", r.getDescription());
+                if (r.getCategories() != null && !r.getCategories().isEmpty()) {
+                    resourceData.put("categories", r.getCategories());
+                }
+                Map<String, String> contact = new HashMap<>();
+                if (r.getPhones() != null) {
+                    if (r.getPhones().getPrimary() != null && r.getPhones().getPrimary().getNumber() != null) {
+                        contact.put("phone", r.getPhones().getPrimary().getNumber());
+                    } else if (r.getPhones().getHotline() != null && r.getPhones().getHotline().getNumber() != null) {
+                        contact.put("phone", r.getPhones().getHotline().getNumber());
+                    }
+                }
+                if (r.getContact() != null && r.getContact().getWebsite() != null) {
+                    contact.put("website", r.getContact().getWebsite());
+                }
+                if (!contact.isEmpty()) {
+                    resourceData.put("contact", contact);
+                }
+                resourceData.put("fees", r.getFees());
+                resourceData.put("hours", r.getHours());
+                resourcesList.add(resourceData);
+            }
+            responseMap.put("suggestedResources", resourcesList);
+            
+            return ResponseEntity.ok(responseMap);
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }

@@ -89,12 +89,48 @@ mvn exec:java -Dexec.mainClass="com.suicide.questionbank.QuestionBankManager"
 mvn exec:java -Dexec.mainClass="com.suicide.questionbank.ExampleUsage"
 ```
 
+## LLM Integration
+
+The chatbot uses **Retrieval-Augmented Generation (RAG)** to provide personalized, conversational responses:
+
+1. **Retrieval**: Analyzes user messages to find relevant resources and questions
+2. **Augmentation**: Provides this context to the LLM
+3. **Generation**: LLM generates empathetic, personalized responses
+
+### Quick Setup
+
+1. **Get an API key** from your LLM provider (OpenAI, Vanderbilt.ai, etc.)
+2. **Configure** in `src/main/resources/application.properties`:
+   ```properties
+   llm.api.key=your-api-key-here
+   llm.api.endpoint=https://api.openai.com/v1/chat/completions
+   llm.model=gpt-3.5-turbo
+   ```
+3. **Restart** the application
+
+### Configuration
+
+The chatbot automatically uses LLM if an API key is configured, otherwise falls back to rule-based responses.
+
+**OpenAI Setup:**
+1. Get API key from: https://platform.openai.com/api-keys
+2. Add billing if needed: https://platform.openai.com/account/billing
+3. Configure in `application.properties` (see file for details)
+
+**Local LLM (Ollama):**
+- Install Ollama: https://ollama.ai/download
+- Run: `ollama pull llama3.2:1b`
+- Update `application.properties` to use Ollama endpoint
+
+See `DEVELOPMENT_WORKFLOW.md` for current development workflow.
+
 ## Important Notes
 
 - **Use with professional training**: These questions are tools for trained mental health professionals
 - **Not a replacement for clinical judgment**: Always use professional assessment alongside these questions
 - **Emergency situations**: In immediate risk situations, contact emergency services (911 or local crisis line)
 - **Cultural sensitivity**: Adapt questions as needed for cultural context and individual needs
+- **LLM responses**: LLM-generated responses should be reviewed by professionals and are not a substitute for human judgment
 
 ## Crisis Resources
 
@@ -150,8 +186,11 @@ Set<String> counties = manager.getAllCounties();
 suicide_question_bank/
 ├── pom.xml                       # Maven build configuration
 ├── README.md                     # This file
-├── RESOURCES_SETUP.md            # Instructions for setting up resources
-├── suicide_question_bank.json    # Question bank data (root, for backward compatibility)
+├── DEVELOPMENT_WORKFLOW.md        # Development workflow guide
+├── install_maven.ps1             # Maven installation script
+├── run.bat                       # Run application script
+├── setup_ngrok.ps1               # ngrok setup for sharing
+├── setup_ollama.ps1              # Ollama local LLM setup
 └── src/
     └── main/
         ├── java/
@@ -164,10 +203,17 @@ suicide_question_bank/
         │               ├── Resource.java                 # Resource POJO class
         │               ├── ResourceManager.java           # Resource management class
         │               ├── ExampleUsage.java             # Java usage examples
-        │               └── SPCchatbotDemo.java           # Chatbot resource retrieval
+        │               ├── SPCchatbotDemo.java           # Chatbot resource retrieval
+        │               ├── LLMService.java               # LLM API integration service
+        │               ├── ChatService.java              # Conversational chat service with RAG
+        │               ├── ChatbotController.java        # Web controller for chatbot
+        │               └── CrisisChatbotApplication.java  # Spring Boot application
         └── resources/
+            ├── application.properties                   # Configuration (LLM API keys, etc.)
             ├── suicide_question_bank.json                # Question bank data (classpath)
-            └── resources_full.json                       # Crisis resources database
+            ├── resources_full.json                       # Crisis resources database
+            └── templates/
+                └── index.html                           # Web interface
 ```
 
 ## Building and Running
@@ -192,7 +238,10 @@ Once running, open your browser and navigate to:
 - **http://localhost:8080**
 
 The web interface includes:
-- **Chatbot Tab**: Enter a transcript/description to get recommended resources
+- **Chatbot Tab**: Conversational AI chatbot that provides personalized responses using LLM integration
+  - Uses Retrieval-Augmented Generation (RAG) to respond based on relevant resources and questions
+  - Supports OpenAI and other OpenAI-compatible APIs
+  - Automatically falls back to rule-based responses if LLM is unavailable
 - **Questions Tab**: Browse and filter questions by category, tier, risk level
 - **Resources Tab**: Search resources by category, county, or name
 

@@ -3,8 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crisis Chatbot - Suicide Prevention Center</title>
+    <title>National Suicide Prevention Crisis Response Assist</title>
     <style>
+        :root {
+            --background: #ffffff;
+            --foreground: #030213;
+            --card: #ffffff;
+            --card-foreground: #030213;
+            --primary: #030213;
+            --primary-foreground: #ffffff;
+            --secondary: #f3f3f5;
+            --secondary-foreground: #030213;
+            --muted: #ececf0;
+            --muted-foreground: #717182;
+            --accent: #e9ebef;
+            --accent-foreground: #030213;
+            --border: rgba(0, 0, 0, 0.1);
+            --input-background: #f3f3f5;
+            --radius: 0.625rem;
+            --font-weight-medium: 500;
+            --font-weight-normal: 400;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,68 +32,88 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
             min-height: 100vh;
-            padding: 20px;
+            padding: 24px;
+            font-size: 16px;
+            line-height: 1.5;
+            font-weight: var(--font-weight-normal);
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: var(--card);
+            border-radius: calc(var(--radius) + 4px);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.05);
             overflow: hidden;
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            padding: 32px;
             text-align: center;
+            border-bottom: 1px solid var(--border);
         }
         
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 1.875rem;
+            font-weight: var(--font-weight-medium);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
         
         .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
+            font-size: 0.9375rem;
+            opacity: 0.8;
+            font-weight: var(--font-weight-normal);
         }
         
         .content {
-            padding: 30px;
+            padding: 32px;
         }
         
         .tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 1px solid var(--border);
         }
         
         .tab {
-            padding: 15px 30px;
+            padding: 12px 24px;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 1.1em;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
+            font-size: 0.9375rem;
+            font-weight: var(--font-weight-medium);
+            color: var(--muted-foreground);
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            top: 1px;
+            background: transparent;
         }
         
         .tab:hover {
-            color: #667eea;
+            color: var(--foreground);
+            background: var(--muted);
+            border-radius: var(--radius) var(--radius) 0 0;
         }
         
         .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-            font-weight: bold;
+            color: var(--foreground);
+            border-bottom-color: var(--primary);
+            background: var(--accent);
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        
+        .tab.active:hover {
+            background: var(--muted);
         }
         
         .tab-content {
@@ -85,20 +125,26 @@
         }
         
         .chat-container {
-            background: #f5f5f5;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: var(--muted);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
             min-height: 400px;
             max-height: 600px;
             overflow-y: auto;
+            border: 1px solid var(--border);
+            transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .chat-container:hover {
+            background: #f5f5f7;
         }
         
         .message {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             display: flex;
             align-items: flex-start;
-            gap: 10px;
+            gap: 12px;
         }
         
         .message.user {
@@ -107,129 +153,187 @@
         
         .message-bubble {
             max-width: 70%;
-            padding: 15px 20px;
-            border-radius: 20px;
+            padding: 12px 16px;
+            border-radius: var(--radius);
             word-wrap: break-word;
+            font-size: 0.9375rem;
+            line-height: 1.5;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .message.user .message-bubble {
-            background: #667eea;
-            color: white;
-            border-bottom-right-radius: 5px;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.user .message-bubble:hover {
+            background: #1a1825;
+            transform: scale(1.02);
         }
         
         .message.bot .message-bubble {
-            background: white;
-            color: #333;
-            border: 1px solid #e0e0e0;
-            border-bottom-left-radius: 5px;
+            background: var(--card);
+            color: var(--card-foreground);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message.bot .message-bubble:hover {
+            background: var(--accent);
+            border-color: var(--primary);
+            transform: scale(1.02);
         }
         
         .input-area {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 24px;
         }
         
         .input-area textarea {
             flex: 1;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1em;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.9375rem;
             resize: vertical;
             min-height: 100px;
             font-family: inherit;
+            background: var(--input-background);
+            color: var(--foreground);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .input-area textarea:hover {
+            border-color: var(--muted-foreground);
         }
         
         .input-area textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(3, 2, 19, 0.1);
+            background: var(--card);
         }
         
         .btn {
-            padding: 15px 30px;
-            background: #667eea;
-            color: white;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: var(--primary-foreground);
             border: none;
-            border-radius: 10px;
+            border-radius: var(--radius);
             cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: all 0.3s;
+            font-size: 0.9375rem;
+            font-weight: var(--font-weight-medium);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            align-self: flex-start;
+            position: relative;
+            overflow: hidden;
         }
         
-        .btn:hover {
-            background: #5568d3;
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover:not(:disabled)::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #1a1825;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(3, 2, 19, 0.2);
+        }
+        
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(3, 2, 19, 0.15);
         }
         
         .btn:disabled {
-            background: #ccc;
+            background: var(--muted);
+            color: var(--muted-foreground);
             cursor: not-allowed;
             transform: none;
+            opacity: 0.6;
         }
         
         .resources-list {
             display: grid;
-            gap: 20px;
+            gap: 16px;
         }
         
         .resource-card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 15px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             padding: 20px;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
         }
         
         .resource-card:hover {
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            background: var(--accent);
         }
         
         .resource-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-size: 1.125rem;
+            font-weight: var(--font-weight-medium);
         }
         
         .resource-card .justification {
-            background: #f0f4ff;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
+            background: var(--accent);
+            padding: 12px;
+            border-radius: calc(var(--radius) - 2px);
+            margin-top: 12px;
             font-style: italic;
-            color: #555;
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
         }
         
         .resource-info {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #666;
+            gap: 12px;
+            margin-top: 16px;
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
         }
         
         .resource-info strong {
-            color: #333;
+            color: var(--foreground);
+            font-weight: var(--font-weight-medium);
         }
         
         .loading {
             text-align: center;
-            padding: 40px;
-            color: #666;
+            padding: 48px;
+            color: var(--muted-foreground);
         }
         
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 3px solid var(--muted);
+            border-top: 3px solid var(--primary);
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
         }
         
         @keyframes spin {
@@ -240,42 +344,55 @@
         .error {
             background: #fee;
             color: #c33;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
+            padding: 16px;
+            border-radius: var(--radius);
+            margin: 24px 0;
+            border: 1px solid #fcc;
+            font-size: 0.9375rem;
         }
         
         .questions-list {
             display: grid;
-            gap: 15px;
+            gap: 12px;
         }
         
         .question-card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .question-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateX(4px);
+            background: var(--accent);
         }
         
         .question-card .question-text {
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            color: #333;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: var(--foreground);
+            font-weight: var(--font-weight-normal);
         }
         
         .question-meta {
             display: flex;
-            gap: 15px;
-            font-size: 0.85em;
-            color: #666;
+            gap: 12px;
+            font-size: 0.8125rem;
+            color: var(--muted-foreground);
+            flex-wrap: wrap;
         }
         
         .badge {
             display: inline-block;
             padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: bold;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.75rem;
+            font-weight: var(--font-weight-medium);
         }
         
         .badge.tier-3 {
@@ -294,47 +411,73 @@
         }
         
         .filter-section {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            background: var(--muted);
+            padding: 24px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
         }
         
         .filter-group {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 16px;
+            margin-bottom: 16px;
         }
         
         .filter-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
+            margin-bottom: 8px;
+            font-weight: var(--font-weight-medium);
+            color: var(--foreground);
+            font-size: 0.875rem;
         }
         
         .filter-group select,
         .filter-group input {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.9375rem;
+            background: var(--input-background);
+            color: var(--foreground);
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .filter-group select:hover,
+        .filter-group input:hover {
+            border-color: var(--muted-foreground);
+            background: var(--card);
         }
         
         .filter-group select:focus,
         .filter-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(3, 2, 19, 0.1);
+            background: var(--card);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🆘 Crisis Chatbot</h1>
-            <p>Suicide Prevention Center - Resource Retrieval Assistant</p>
+            <h1>National Suicide Prevention Crisis Response Assist</h1>
+            <p>Resource Retrieval Assistant for Crisis Responders</p>
         </div>
         
         <div class="content">
@@ -349,15 +492,16 @@
                 <div class="chat-container" id="chatMessages">
                     <div class="message bot">
                         <div class="message-bubble">
-                            <strong>Bot:</strong> Hello! I'm here to help you find resources during this crisis. 
-                            Please describe your situation or needs, and I'll recommend the best resources for you.
+                            <strong>Bot:</strong> Hello! I'm here to help you as a crisis responder. 
+                            Describe the situation you're helping with, and I'll suggest appropriate questions to ask 
+                            and resources to recommend to the person in crisis.
                         </div>
                     </div>
                 </div>
                 
                 <div class="input-area">
-                    <textarea id="transcriptInput" placeholder="Describe your situation or needs..."></textarea>
-                    <button class="btn" onclick="getResources()">Get Resources</button>
+                    <textarea id="chatInput" placeholder="Type your message here..."></textarea>
+                    <button class="btn" onclick="sendChatMessage()" id="sendButton">Send</button>
                 </div>
                 
                 <div id="resourcesResults"></div>
@@ -431,6 +575,9 @@
     </div>
     
     <script>
+        // Conversation history for chat
+        let conversationHistory = [];
+        
         // Tab switching
         function switchTab(tabName) {
             // Hide all tabs
@@ -451,27 +598,42 @@
             }
         }
         
-        // Get resources from transcript
-        async function getResources() {
-            const transcript = document.getElementById('transcriptInput').value.trim();
-            if (!transcript) {
-                alert('Please enter a transcript or description of the situation.');
+        // Send chat message using LLM
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) {
                 return;
             }
             
             // Add user message to chat
-            addMessage('user', transcript);
+            addMessage('user', message);
+            
+            // Add to conversation history
+            conversationHistory.push({ role: 'user', content: message });
+            
+            // Clear input
+            input.value = '';
+            
+            // Disable send button
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
             
             // Show loading
-            const loadingId = addMessage('bot', 'Searching for resources...');
+            const loadingId = addMessage('bot', 'Thinking...');
             
             try {
-                const response = await fetch('/api/resources', {
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ transcript: transcript })
+                    body: JSON.stringify({
+                        message: message,
+                        history: conversationHistory.slice(0, -1) // Exclude current message
+                    })
                 });
                 
                 const data = await response.json();
@@ -480,14 +642,43 @@
                 document.getElementById(loadingId).remove();
                 
                 if (data.error) {
-                    addMessage('bot', 'Error: ' + data.error);
+                    let errorMsg = data.error;
+                    if (errorMsg.includes('not configured')) {
+                        errorMsg = 'LLM service is not configured. Please set up your API key in application.properties or as an environment variable. See LLM_SETUP.md for instructions.';
+                    }
+                    addMessage('bot', 'Error: ' + errorMsg);
                 } else {
-                    displayResources(data.top_resources || []);
+                    // Add bot response to chat
+                    addMessage('bot', data.message);
+                    
+                    // Add to conversation history
+                    conversationHistory.push({ role: 'assistant', content: data.message });
+                    
+                    // Display suggested resources if any
+                    if (data.suggestedResources && data.suggestedResources.length > 0) {
+                        displayChatResources(data.suggestedResources);
+                    }
                 }
             } catch (error) {
                 document.getElementById(loadingId).remove();
                 addMessage('bot', 'Error: ' + error.message);
+            } finally {
+                // Re-enable send button
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send';
             }
+        }
+        
+        // Legacy function for backward compatibility (Get Resources button)
+        async function getResources() {
+            const transcript = document.getElementById('chatInput')?.value.trim() || '';
+            if (!transcript) {
+                alert('Please enter a message first.');
+                return;
+            }
+            
+            // Use chat functionality
+            await sendChatMessage();
         }
         
         // Add message to chat
@@ -509,7 +700,7 @@
             return id;
         }
         
-        // Display resources
+        // Display resources (legacy format)
         function displayResources(resources) {
             const resultsDiv = document.getElementById('resourcesResults');
             
@@ -532,6 +723,36 @@
                             ${resource.cost ? '<div><strong>Cost:</strong> ' + escapeHtml(resource.cost) + '</div>' : ''}
                             ${resource.hours ? '<div><strong>Hours:</strong> ' + escapeHtml(resource.hours) + '</div>' : ''}
                             ${resource.language ? '<div><strong>Languages:</strong> ' + escapeHtml(resource.language) + '</div>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Display resources from chat response
+        function displayChatResources(resources) {
+            const resultsDiv = document.getElementById('resourcesResults');
+            
+            if (resources.length === 0) {
+                return;
+            }
+            
+            let html = '<div class="resources-list" style="margin-top: 24px;">';
+            html += '<h3 style="margin-bottom: 16px; color: var(--primary); font-size: 1.125rem; font-weight: 500;">Suggested Resources:</h3>';
+            resources.forEach(resource => {
+                html += `
+                    <div class="resource-card">
+                        <h3>${escapeHtml(resource.name || 'Unnamed Resource')}</h3>
+                        ${resource.description ? '<p>' + escapeHtml(resource.description) + '</p>' : ''}
+                        <div class="resource-info">
+                            ${resource.categories && resource.categories.length > 0 ? '<div><strong>Categories:</strong> ' + escapeHtml(resource.categories.join(', ')) + '</div>' : ''}
+                            ${resource.contact && resource.contact.phone ? '<div><strong>Phone:</strong> ' + escapeHtml(resource.contact.phone) + '</div>' : ''}
+                            ${resource.contact && resource.contact.website ? '<div><strong>Website:</strong> <a href="' + escapeHtml(resource.contact.website) + '" target="_blank">' + escapeHtml(resource.contact.website) + '</a></div>' : ''}
+                            ${resource.fees ? '<div><strong>Cost:</strong> ' + escapeHtml(resource.fees) + '</div>' : ''}
+                            ${resource.hours ? '<div><strong>Hours:</strong> ' + escapeHtml(resource.hours) + '</div>' : ''}
                         </div>
                     </div>
                 `;
@@ -590,7 +811,7 @@
                             <span>Tone: ${escapeHtml(question.tone || 'N/A')}</span>
                             ${question.useAfterRapport ? '<span>Requires Rapport</span>' : ''}
                         </div>
-                        ${question.notes ? '<p style="margin-top: 10px; font-size: 0.9em; color: #666;">' + escapeHtml(question.notes) + '</p>' : ''}
+                        ${question.notes ? '<p style="margin-top: 12px; font-size: 0.875rem; color: var(--muted-foreground);">' + escapeHtml(question.notes) + '</p>' : ''}
                     </div>
                 `;
             });
@@ -688,12 +909,15 @@
         }
         
         // Allow Enter key to submit in textarea (Shift+Enter for new line)
-        document.getElementById('transcriptInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                getResources();
-            }
-        });
+        const chatInput = document.getElementById('chatInput');
+        if (chatInput) {
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+        }
     </script>
 </body>
 </html>
