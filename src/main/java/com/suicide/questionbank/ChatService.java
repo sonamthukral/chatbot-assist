@@ -120,7 +120,7 @@ public class ChatService {
         // Generate response - use LLM if available, otherwise use fallback
         String response;
         if (useLLM && llmService != null) {
-            System.out.println("Using LLM to generate response...");
+            System.out.println("\n🤖 Attempting to use LLM to generate AI-powered response...");
             try {
                 response = llmService.generateResponseWithContext(
                     userMessage,
@@ -128,26 +128,33 @@ public class ChatService {
                     relevantQuestions,
                     conversationHistory
                 );
-                System.out.println("LLM response generated successfully (length: " + response.length() + " chars)");
+                System.out.println("✅ LLM response generated successfully (length: " + response.length() + " chars)");
+                System.out.println("✅ Response is AI-generated using OpenAI API\n");
             } catch (IOException e) {
                 String errorMsg = e.getMessage();
-                System.err.println("❌ LLM error, falling back to rule-based response: " + errorMsg);
+                System.err.println("\n❌ LLM API call failed, using helpful fallback response");
+                System.err.println("   Error: " + errorMsg);
                 
-                // Check for specific error types
+                // Check for specific error types and provide helpful messages
                 if (errorMsg != null) {
-                    if (errorMsg.contains("insufficient_quota") || errorMsg.contains("429")) {
-                        System.err.println("⚠️ OpenAI quota exceeded! Please add billing or use a new API key.");
-                        System.err.println("   See: https://platform.openai.com/account/billing");
+                    if (errorMsg.contains("insufficient_quota") || errorMsg.contains("429") || errorMsg.contains("quota")) {
+                        System.err.println("⚠️ OpenAI quota exceeded or no credits available.");
+                        System.err.println("   → Add billing: https://platform.openai.com/account/billing");
+                        System.err.println("   → Once billing is added, LLM will work automatically!");
                     } else if (errorMsg.contains("401") || errorMsg.contains("Invalid API key")) {
-                        System.err.println("⚠️ Invalid API key! Please check your API key in application.properties");
+                        System.err.println("⚠️ Invalid API key! Check your API key in application.properties or environment variables.");
+                    } else if (errorMsg.contains("rate limit")) {
+                        System.err.println("⚠️ Rate limit exceeded. Please wait a moment and try again.");
+                    } else {
+                        System.err.println("⚠️ API error. Check your OpenAI account status.");
                     }
                 }
                 
-                e.printStackTrace();
+                System.out.println("📝 Using rule-based fallback response (still helpful, but not AI-generated)\n");
                 response = generateFallbackResponse(userMessage, relevantResources, relevantQuestions, transcript);
             }
         } else {
-            System.out.println("Using fallback rule-based response (LLM not available)");
+            System.out.println("📝 Using rule-based response (LLM not configured)");
             response = generateFallbackResponse(userMessage, relevantResources, relevantQuestions, transcript);
         }
         

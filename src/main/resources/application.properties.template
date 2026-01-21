@@ -4,7 +4,9 @@
 
 # Server Configuration
 # Port is automatically set by cloud platforms (Railway, Render, etc.) via PORT environment variable
+# Bind to all interfaces (0.0.0.0) so Railway can access it - REQUIRED for cloud deployment
 server.port=${PORT:8080}
+server.address=0.0.0.0
 
 # OpenAI Configuration
 llm.api.key=YOUR_OPENAI_API_KEY_HERE

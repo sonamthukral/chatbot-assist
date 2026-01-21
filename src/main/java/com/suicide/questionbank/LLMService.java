@@ -131,7 +131,8 @@ public class LLMService {
         Request request = requestBuilder.build();
         
         System.out.println("Making LLM API call to: " + apiEndpoint);
-        System.out.println("Request body (first 200 chars): " + requestBody.toString().substring(0, Math.min(200, requestBody.toString().length())));
+        System.out.println("Model: " + model);
+        System.out.println("Message count: " + messages.size());
         
         try (Response response = httpClient.newCall(request).execute()) {
             System.out.println("LLM API Response Code: " + response.code());
@@ -139,6 +140,16 @@ public class LLMService {
                 String errorBody = response.body() != null ? response.body().string() : "Unknown error";
                 System.err.println("❌ LLM API Error Response: " + errorBody);
                 System.err.println("Response Code: " + response.code());
+                
+                // Provide helpful error messages
+                if (response.code() == 401) {
+                    throw new IOException("Invalid API key. Please check your OpenAI API key in application.properties or environment variables.");
+                } else if (response.code() == 429) {
+                    throw new IOException("Rate limit or quota exceeded. Please add billing to your OpenAI account: https://platform.openai.com/account/billing");
+                } else if (response.code() == 500) {
+                    throw new IOException("OpenAI server error. Please try again in a moment.");
+                }
+                
                 throw new IOException("LLM API request failed: " + response.code() + " - " + errorBody);
             }
             
@@ -240,23 +251,36 @@ public class LLMService {
         }
         
         contextBuilder.append("═══════════════════════════════════════════════════════════════\n");
-        contextBuilder.append("📝 RESPONSE REQUIREMENTS (MANDATORY):\n");
+        contextBuilder.append("📝 RESPONSE REQUIREMENTS (MANDATORY - DO NOT IGNORE):\n");
         contextBuilder.append("═══════════════════════════════════════════════════════════════\n");
-        contextBuilder.append("Your response MUST help the crisis responder by including:\n\n");
-        contextBuilder.append("1. CONTEXT: Acknowledge what the responder is dealing with\n");
-        contextBuilder.append("2. RESOURCES: Suggest at least ONE resource by its EXACT NAME from above\n");
-        contextBuilder.append("   Format: \"You might suggest [RESOURCE NAME] to the person you're helping. ");
-        contextBuilder.append("They can help with [brief description]. Contact: [PHONE NUMBER].\"\n");
-        contextBuilder.append("3. QUESTIONS: Recommend at least ONE question from the RELEVANT QUESTIONS section above\n");
-        contextBuilder.append("   Format: \"Consider asking: '[Question from above, adapted naturally]'\"\n");
-        contextBuilder.append("4. GUIDANCE: Provide brief professional guidance on how to use these resources/questions\n\n");
+        contextBuilder.append("⚠️ CRITICAL: You MUST use the resources and questions listed above. ");
+        contextBuilder.append("Do NOT give generic advice. Do NOT make up resources. ");
+        contextBuilder.append("ONLY use the resources and questions provided.\n\n");
+        contextBuilder.append("Your response MUST include ALL of the following:\n\n");
+        contextBuilder.append("1. CONTEXT: Acknowledge what the responder is dealing with (1-2 sentences)\n");
+        contextBuilder.append("2. RESOURCES (REQUIRED): Suggest at least ONE resource by its EXACT NAME from the list above.\n");
+        contextBuilder.append("   - Use the EXACT resource name as shown above\n");
+        contextBuilder.append("   - Include the phone number if provided\n");
+        contextBuilder.append("   - Explain why this resource is relevant\n");
+        contextBuilder.append("   - Format: \"I recommend suggesting [EXACT RESOURCE NAME FROM ABOVE] to the person you're helping. ");
+        contextBuilder.append("They specialize in [what they do]. You can reach them at [PHONE NUMBER FROM ABOVE].\"\n\n");
+        contextBuilder.append("3. QUESTIONS (REQUIRED): Recommend at least ONE question from the RELEVANT QUESTIONS section above.\n");
+        contextBuilder.append("   - Use the EXACT question text or adapt it naturally\n");
+        contextBuilder.append("   - Format: \"Consider asking the person: '[Question from above, word-for-word or naturally adapted]'\"\n");
+        contextBuilder.append("   - Explain why this question is helpful for this situation\n\n");
+        contextBuilder.append("4. GUIDANCE: Provide brief professional guidance (2-3 sentences) on how to use these resources/questions\n\n");
         
-        contextBuilder.append("EXAMPLE RESPONSE STRUCTURE:\n");
-        contextBuilder.append("\"Based on what you've described, here's how you can help:\n");
-        contextBuilder.append("RESOURCE: You might suggest [RESOURCE NAME FROM ABOVE] to the person you're helping. ");
-        contextBuilder.append("They specialize in [what they do] and can be reached at [PHONE NUMBER].\n");
-        contextBuilder.append("QUESTION: Consider asking: '[One of the questions above, adapted naturally]'\n");
-        contextBuilder.append("This will help you better understand their situation and provide appropriate support.\"\n\n");
+        contextBuilder.append("EXAMPLE RESPONSE STRUCTURE (follow this format):\n");
+        contextBuilder.append("\"Based on what you've described, here's how you can help:\n\n");
+        contextBuilder.append("RESOURCE RECOMMENDATION:\n");
+        contextBuilder.append("I recommend suggesting [EXACT RESOURCE NAME FROM THE LIST ABOVE] to the person you're helping. ");
+        contextBuilder.append("This resource [brief description from above]. ");
+        contextBuilder.append("You can contact them at [PHONE NUMBER FROM ABOVE].\n\n");
+        contextBuilder.append("QUESTION TO ASK:\n");
+        contextBuilder.append("Consider asking: '[EXACT QUESTION TEXT FROM THE RELEVANT QUESTIONS SECTION ABOVE]' ");
+        contextBuilder.append("This question will help you [explain why it's relevant].\n\n");
+        contextBuilder.append("GUIDANCE:\n");
+        contextBuilder.append("[2-3 sentences of professional guidance on how to use these resources and questions effectively].\"\n\n");
         
         contextBuilder.append("⚠️ REMEMBER:\n");
         contextBuilder.append("- You're helping a CRISIS RESPONDER, not a person in crisis\n");

@@ -44,17 +44,20 @@ public class ChatbotController {
                     LLMService llmService = new LLMService(llmApiKey, llmEndpoint, llmModel);
                     this.chatService = new ChatService(llmService, resourceManager, questionManager);
                     System.out.println("✅ LLM service enabled - using AI-powered responses.");
+                    System.out.println("✅ Ready to use OpenAI API. When you add billing, responses will be AI-generated.");
+                    System.out.println("✅ Until then, the system will use helpful rule-based fallback responses.");
                 } catch (Exception e) {
                     System.err.println("❌ Error creating LLM service: " + e.getMessage());
                     e.printStackTrace();
                     this.chatService = new ChatService(resourceManager, questionManager);
                     System.out.println("⚠️ Falling back to rule-based responses due to LLM initialization error.");
+                    System.out.println("⚠️ This is normal if your API key has quota issues. Add billing to enable LLM.");
                 }
             } else {
                 // Use fallback mode - rule-based conversational responses
                 this.chatService = new ChatService(resourceManager, questionManager);
                 System.out.println("⚠️ LLM API key not configured. Using rule-based conversational responses.");
-                System.out.println("Set 'llm.api.key' in application.properties to enable AI-powered responses.");
+                System.out.println("Set 'llm.api.key' in application.properties or as environment variable to enable AI-powered responses.");
             }
         } catch (IOException e) {
             System.err.println("Error initializing managers: " + e.getMessage());
